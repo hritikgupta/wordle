@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { socket } from '../socket';
 import { GameBoard } from '../components/GameBoard';
 import { Keyboard } from '../components/Keyboard';
@@ -17,6 +17,7 @@ export function Game({ roomCode, playerName, onGameEnd }) {
   const [winner, setWinner] = useState(null);
   const [wordWas, setWordWas] = useState('');
   const [opponentDisconnected, setOpponentDisconnected] = useState(false);
+  const inputRef = useRef(null);
 
   useEffect(() => {
     // Handle room updated (someone joined)
@@ -139,6 +140,29 @@ export function Game({ roomCode, playerName, onGameEnd }) {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [handleKeyPress, gameState, opponentDisconnected]);
 
+  // Keep input focused for mobile keyboard support
+  useEffect(() => {
+    if (gameState === 'in_progress' && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [gameState]);
+
+  // Handle mobile text input
+  const handleMobileInput = (e) => {
+    const value = e.target.value.toUpperCase();
+
+    if (value.length > 0) {
+      const lastChar = value[value.length - 1];
+      // Only process letter characters
+      if (/^[A-Z]$/.test(lastChar)) {
+        handleKeyPress(lastChar);
+      }
+    }
+
+    // Clear the input to keep it ready for next character
+    e.target.value = '';
+  };
+
   const handleRematch = () => {
     socket.emit('create_room', { playerName: myName }, (response) => {
       if (response.success) {
@@ -156,6 +180,24 @@ export function Game({ roomCode, playerName, onGameEnd }) {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-gray-100 p-4">
+      {/* Hidden input for mobile keyboard support */}
+      <input
+        ref={inputRef}
+        type="text"
+        className="sr-only"
+        autoComplete="off"
+        autoCorrect="off"
+        autoCapitalize="off"
+        spellCheck="false"
+        onChange={handleMobileInput}
+        onBlur={(e) => {
+          if (gameState === 'in_progress') {
+            setTimeout(() => e.currentTarget.focus(), 100);
+          }
+        }}
+        maxLength="1"
+      />
+
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="text-center mb-6">
