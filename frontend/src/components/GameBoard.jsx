@@ -60,7 +60,7 @@ export function GameBoard({ guesses, currentGuess, playerName, large = false }) 
                       : 'bg-white border-2 border-gray-300'
                   }
                   ${row.isComplete && row.feedback[colIdx] ? 'scale-100' : ''}
-                  text-white ${textSize}
+                  ${row.feedback[colIdx] ? 'text-white' : 'text-gray-800'} ${textSize}
                 `}
               >
                 {letter}
