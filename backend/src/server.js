@@ -4,6 +4,7 @@ import cors from 'cors';
 import { setupSocketHandlers } from './socketHandlers.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import http from 'http';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -36,7 +37,7 @@ app.get('/api/rooms', (req, res) => {
 });
 
 // Create HTTP server
-const server = express.createServer ? app : require('http').createServer(app);
+const server = http.createServer(app);
 
 const io = new Server(server, {
   cors: {
