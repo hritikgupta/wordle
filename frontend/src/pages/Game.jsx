@@ -283,8 +283,8 @@ export function Game({ roomCode, playerName, onGameEnd, onLeaveGame }) {
         }}
       />
 
-      {/* Opponent Board - Fixed Badge in Top-Right */}
-      <div className="fixed top-4 right-4 z-40">
+      {/* Opponent Board - Fixed Badge at Bottom-Left */}
+      <div className="fixed bottom-20 left-4 z-40">
         <OpponentBoard
           guesses={opponentGuesses}
           playerName={opponentName}

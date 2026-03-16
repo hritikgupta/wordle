@@ -28,8 +28,8 @@ function loadWordLists() {
 
     console.log(`✅ Loaded ${TARGET_WORDS.length} target words`);
 
-    // Load valid guesses (all allowed words - 10,656 words)
-    const validGuessesPath = path.join(RESOURCES_DIR, 'official_allowed_guesses.txt');
+    // Load valid guesses (all recognized words - 12,972 words from combined list)
+    const validGuessesPath = path.join(RESOURCES_DIR, 'combined_wordlist.txt');
     const validGuessesContent = fs.readFileSync(validGuessesPath, 'utf-8');
     const validGuessesLines = validGuessesContent.split('\n');
 
