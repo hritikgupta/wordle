@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { socket } from '../socket';
 import { GameBoard } from '../components/GameBoard';
+import { OpponentBoard } from '../components/OpponentBoard';
 import { Keyboard } from '../components/Keyboard';
 import { RoomCode } from '../components/RoomCode';
 import { GameStatus } from '../components/GameStatus';
@@ -243,10 +244,10 @@ export function Game({ roomCode, playerName, onGameEnd }) {
             />
           </div>
           <div>
-            <GameBoard
+            <OpponentBoard
               guesses={opponentGuesses}
-              currentGuess=""
               playerName={opponentName}
+              playerCount={playerCount}
             />
           </div>
         </div>
