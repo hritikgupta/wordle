@@ -126,7 +126,12 @@ export function Home({ onGameStart }) {
           <button
             onClick={handleJoinRoom}
             disabled={isJoining || !playerName.trim() || !roomCode.trim()}
-            className="w-full bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 text-white font-bold py-3 rounded-lg transition-colors"
+            title={
+              !playerName.trim() ? 'Enter your name first' :
+              !roomCode.trim() ? 'Enter a room code' :
+              isJoining ? 'Joining...' : 'Join game'
+            }
+            className="w-full bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-bold py-3 rounded-lg transition-colors"
           >
             {isJoining ? 'Joining room...' : 'Join Game'}
           </button>
