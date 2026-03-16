@@ -6,7 +6,7 @@ import { Keyboard } from '../components/Keyboard';
 import { RoomCode } from '../components/RoomCode';
 import { GameStatus } from '../components/GameStatus';
 
-export function Game({ roomCode, playerName, onGameEnd }) {
+export function Game({ roomCode, playerName, onGameEnd, onLeaveGame }) {
   const [gameState, setGameState] = useState('waiting'); // waiting, in_progress, won, draw
   const [currentGuess, setCurrentGuess] = useState('');
   const [myGuesses, setMyGuesses] = useState([]);
@@ -148,19 +148,18 @@ export function Game({ roomCode, playerName, onGameEnd }) {
     }
   }, [gameState]);
 
-  // Handle mobile text input
+  // Handle mobile text input - both onChange and onInput
   const handleMobileInput = (e) => {
-    const value = e.target.value.toUpperCase();
+    let value = e.target.value.toUpperCase();
 
-    if (value.length > 0) {
-      const lastChar = value[value.length - 1];
-      // Only process letter characters
-      if (/^[A-Z]$/.test(lastChar)) {
-        handleKeyPress(lastChar);
+    // Process all characters in the input
+    for (let char of value) {
+      if (/^[A-Z]$/.test(char)) {
+        handleKeyPress(char);
       }
     }
 
-    // Clear the input to keep it ready for next character
+    // Clear the input immediately for next character
     e.target.value = '';
   };
 
@@ -185,24 +184,32 @@ export function Game({ roomCode, playerName, onGameEnd }) {
       <input
         ref={inputRef}
         type="text"
+        inputMode="text"
         className="sr-only"
         autoComplete="off"
         autoCorrect="off"
         autoCapitalize="off"
         spellCheck="false"
         onChange={handleMobileInput}
+        onInput={handleMobileInput}
         onBlur={(e) => {
           if (gameState === 'in_progress') {
-            setTimeout(() => e.currentTarget.focus(), 100);
+            setTimeout(() => e.currentTarget.focus(), 50);
           }
         }}
-        maxLength="1"
+        maxLength="5"
       />
 
-      <div className="max-w-6xl mx-auto">
-        {/* Header */}
-        <div className="text-center mb-6">
+      <div className="max-w-6xl mx-auto px-0 sm:px-2">
+        {/* Header with Leave Button */}
+        <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-bold text-gray-800">🎮 Multiplayer Wordle</h1>
+          <button
+            onClick={onLeaveGame}
+            className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg text-sm font-semibold"
+          >
+            Leave Game
+          </button>
         </div>
 
         {/* Room Code & Status */}
