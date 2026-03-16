@@ -141,6 +141,18 @@ export function setupSocketHandlers(io) {
       }
     });
 
+    // Player typing - broadcast current guess in real-time
+    socket.on('player_typing', (data) => {
+      try {
+        io.to(socket.roomCode).emit('opponent_typing', {
+          playerId: socket.playerId,
+          currentGuess: data.currentGuess,
+        });
+      } catch (error) {
+        console.error('Error broadcasting typing:', error);
+      }
+    });
+
     // Get room status
     socket.on('get_room_status', (data, callback) => {
       try {

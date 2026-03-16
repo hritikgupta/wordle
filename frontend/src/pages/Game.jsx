@@ -11,6 +11,7 @@ export function Game({ roomCode, playerName, onGameEnd, onLeaveGame }) {
   const [currentGuess, setCurrentGuess] = useState('');
   const [myGuesses, setMyGuesses] = useState([]);
   const [opponentGuesses, setOpponentGuesses] = useState([]);
+  const [opponentCurrentGuess, setOpponentCurrentGuess] = useState(''); // Real-time typing
   const [myName, setMyName] = useState(playerName);
   const [opponentName, setOpponentName] = useState('Opponent');
   const [playerCount, setPlayerCount] = useState(1);
@@ -20,6 +21,7 @@ export function Game({ roomCode, playerName, onGameEnd, onLeaveGame }) {
   const [opponentDisconnected, setOpponentDisconnected] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const inputRef = useRef(null);
+  const typingTimeoutRef = useRef(null); // Debounce timeout for typing
 
   useEffect(() => {
     console.log('📋 Game component mounted, setting up socket listeners for room:', roomCode);
@@ -109,11 +111,19 @@ export function Game({ roomCode, playerName, onGameEnd, onLeaveGame }) {
       setOpponentDisconnected(true);
     };
 
+    // Handle opponent typing - real-time
+    const handleOpponentTyping = (data) => {
+      if (data.playerId !== socket.id) {
+        setOpponentCurrentGuess(data.currentGuess);
+      }
+    };
+
     socket.on('room_updated', handleRoomUpdated);
     socket.on('game_started', handleGameStarted);
     socket.on('board_updated', handleBoardUpdated);
     socket.on('game_over', handleGameOver);
     socket.on('player_disconnected', handlePlayerDisconnected);
+    socket.on('opponent_typing', handleOpponentTyping);
     console.log('✅ All socket listeners attached');
 
     return () => {
@@ -123,8 +133,36 @@ export function Game({ roomCode, playerName, onGameEnd, onLeaveGame }) {
       socket.off('board_updated', handleBoardUpdated);
       socket.off('game_over', handleGameOver);
       socket.off('player_disconnected', handlePlayerDisconnected);
+      socket.off('opponent_typing', handleOpponentTyping);
     };
   }, []);
+
+  // Emit typing in real-time (with debounce to avoid spam)
+  useEffect(() => {
+    if (gameState !== 'in_progress' || !currentGuess) {
+      // Clear opponent's typing when game ends or guess submitted
+      if (!currentGuess) {
+        setOpponentCurrentGuess('');
+      }
+      return;
+    }
+
+    // Clear previous timeout
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
+
+    // Emit after a short delay (debounce)
+    typingTimeoutRef.current = setTimeout(() => {
+      socket.emit('player_typing', { currentGuess });
+    }, 100);
+
+    return () => {
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
+    };
+  }, [currentGuess, gameState]);
 
   const handleKeyPress = useCallback((key) => {
     if (gameState !== 'in_progress' || opponentDisconnected) return;
@@ -252,6 +290,7 @@ export function Game({ roomCode, playerName, onGameEnd, onLeaveGame }) {
           playerName={opponentName}
           playerCount={playerCount}
           compact={true}
+          opponentCurrentGuess={opponentCurrentGuess}
         />
       </div>
 

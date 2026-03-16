@@ -32,13 +32,13 @@ export function Keyboard({ onKeyPress, guesses, disabled }) {
                 onClick={() => handleKeyClick(key)}
                 disabled={disabled}
                 className={`
-                  ${width} h-12 sm:h-14 rounded font-semibold text-xs sm:text-sm
+                  ${width} h-20 sm:h-24 rounded font-bold text-xl sm:text-3xl
                   transition-all active:scale-95 cursor-pointer
                   ${getKeyColor(key)}
                   disabled:opacity-50 disabled:cursor-not-allowed
                 `}
               >
-                {key === 'BACKSPACE' ? '← BACK' : key === 'ENTER' ? 'ENTER' : key}
+                {key === 'BACKSPACE' ? '⌫' : key === 'ENTER' ? 'ENTER' : key}
               </button>
             );
           })}

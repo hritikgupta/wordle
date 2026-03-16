@@ -1,7 +1,7 @@
 import React from 'react';
 import { getTileColor } from '../utils';
 
-export function OpponentBoard({ guesses, playerName, playerCount, compact = false }) {
+export function OpponentBoard({ guesses, playerName, playerCount, compact = false, opponentCurrentGuess = '' }) {
   const maxGuesses = 6;
   const guessesLeft = maxGuesses - guesses.length;
 
@@ -24,6 +24,21 @@ export function OpponentBoard({ guesses, playerName, playerCount, compact = fals
               ))}
             </div>
           ))}
+          {/* Show current typing row if opponent is typing */}
+          {opponentCurrentGuess && (
+            <div className="flex gap-0.5 justify-center border-t border-dashed border-gray-300 pt-0.5 mt-0.5">
+              {Array.from({ length: 5 }).map((_, colIdx) => (
+                <div
+                  key={`typing-${colIdx}`}
+                  className={`
+                    w-6 h-6 rounded border-2 border-dashed border-blue-400 bg-blue-50
+                    ${colIdx < opponentCurrentGuess.length ? 'bg-blue-100' : ''}
+                    transition-all
+                  `}
+                />
+              ))}
+            </div>
+          )}
           {/* Show empty rows for remaining guesses */}
           {Array.from({ length: Math.min(guessesLeft, 2) }).map((_, idx) => (
             <div key={`empty-${idx}`} className="flex gap-0.5 justify-center">
@@ -62,6 +77,22 @@ export function OpponentBoard({ guesses, playerName, playerCount, compact = fals
               ))}
             </div>
           ))}
+          {/* Show current typing row if opponent is typing */}
+          {opponentCurrentGuess && (
+            <div className="flex gap-0.5 justify-center border-t border-dashed border-gray-300 pt-1 mt-1">
+              {Array.from({ length: 5 }).map((_, colIdx) => (
+                <div
+                  key={`typing-${colIdx}`}
+                  className={`
+                    w-8 h-8 rounded border-2 border-dashed border-blue-400 bg-blue-50
+                    ${colIdx < opponentCurrentGuess.length ? 'bg-blue-100' : ''}
+                    transition-all
+                  `}
+                  title={`${opponentCurrentGuess.length}/5`}
+                />
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Show remaining guesses as empty rows */}
