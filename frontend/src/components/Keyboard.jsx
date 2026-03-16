@@ -32,7 +32,7 @@ export function Keyboard({ onKeyPress, guesses, disabled }) {
                 onClick={() => handleKeyClick(key)}
                 disabled={disabled}
                 className={`
-                  ${width} h-20 sm:h-24 rounded font-bold text-xl sm:text-3xl
+                  ${width} h-14 sm:h-16 rounded font-bold text-lg sm:text-xl
                   transition-all active:scale-95 cursor-pointer
                   ${getKeyColor(key)}
                   disabled:opacity-50 disabled:cursor-not-allowed
