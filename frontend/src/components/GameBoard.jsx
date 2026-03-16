@@ -1,7 +1,7 @@
 import React from 'react';
 import { getTileColor } from '../utils';
 
-export function GameBoard({ guesses, currentGuess, playerName }) {
+export function GameBoard({ guesses, currentGuess, playerName, large = false }) {
   const displayGuesses = guesses || [];
   const rows = [];
 
@@ -36,6 +36,10 @@ export function GameBoard({ guesses, currentGuess, playerName }) {
     });
   }
 
+  // Responsive tile sizing
+  const tileSize = large ? 'w-14 h-14 sm:w-16 sm:h-16' : 'w-12 h-12';
+  const textSize = large ? 'text-xl sm:text-2xl' : 'text-lg';
+
   return (
     <div className="flex flex-col gap-2">
       <h3 className="text-lg font-semibold text-center text-gray-800">
@@ -48,7 +52,7 @@ export function GameBoard({ guesses, currentGuess, playerName }) {
               <div
                 key={`${rowIdx}-${colIdx}`}
                 className={`
-                  w-12 h-12 flex items-center justify-center font-bold text-lg
+                  ${tileSize} flex items-center justify-center font-bold
                   rounded transition-all duration-300
                   ${
                     row.feedback[colIdx]
@@ -56,7 +60,7 @@ export function GameBoard({ guesses, currentGuess, playerName }) {
                       : 'bg-white border-2 border-gray-300'
                   }
                   ${row.isComplete && row.feedback[colIdx] ? 'scale-100' : ''}
-                  text-white
+                  text-white ${textSize}
                 `}
               >
                 {letter}

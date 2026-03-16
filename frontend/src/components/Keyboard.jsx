@@ -14,7 +14,7 @@ export function Keyboard({ onKeyPress, guesses, disabled }) {
   };
 
   return (
-    <div className="mt-6 flex flex-col gap-2 max-w-md mx-auto">
+    <div className="flex flex-col gap-2 w-full">
       {KEYBOARD_ROWS.map((row, idx) => (
         <div
           key={idx}
@@ -23,8 +23,8 @@ export function Keyboard({ onKeyPress, guesses, disabled }) {
           {row.map((key) => {
             const width =
               key === 'ENTER' || key === 'BACKSPACE'
-                ? 'w-16 sm:w-20'
-                : 'w-8 sm:w-10';
+                ? 'flex-1 min-w-16 sm:min-w-20'
+                : 'flex-1 min-w-8 sm:min-w-10';
 
             return (
               <button
@@ -32,7 +32,7 @@ export function Keyboard({ onKeyPress, guesses, disabled }) {
                 onClick={() => handleKeyClick(key)}
                 disabled={disabled}
                 className={`
-                  ${width} h-10 rounded font-semibold text-xs sm:text-sm
+                  ${width} h-12 sm:h-14 rounded font-semibold text-xs sm:text-sm
                   transition-all active:scale-95 cursor-pointer
                   ${getKeyColor(key)}
                   disabled:opacity-50 disabled:cursor-not-allowed

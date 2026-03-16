@@ -79,9 +79,11 @@ export function setupSocketHandlers(io) {
 
         // If room is full, automatically start game
         if (updatedRoom.hasEnoughPlayers()) {
+          console.log(`🎮 Game started in room ${roomCode}`);
           updatedRoom.startGame();
           io.to(roomCode).emit('game_started', {
             roomCode,
+            playerCount: Object.keys(updatedRoom.players).length,
             players: updatedRoom.getAllPlayersState(),
             message: 'Game started! Both players connected.',
           });
@@ -134,6 +136,27 @@ export function setupSocketHandlers(io) {
             players: room.getAllPlayersState(),
           });
         }
+      } catch (error) {
+        callback({ success: false, error: error.message });
+      }
+    });
+
+    // Get room status
+    socket.on('get_room_status', (data, callback) => {
+      try {
+        const room = gameManager.getRoom(data.roomCode);
+        if (!room) {
+          callback({ success: false, error: 'Room not found' });
+          return;
+        }
+
+        callback({
+          success: true,
+          roomCode: data.roomCode,
+          playerCount: Object.keys(room.players).length,
+          gameStatus: room.gameStatus,
+          players: room.getAllPlayersState(),
+        });
       } catch (error) {
         callback({ success: false, error: error.message });
       }
