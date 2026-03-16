@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { socket } from '../socket';
 import { GameBoard } from '../components/GameBoard';
 import { Keyboard } from '../components/Keyboard';
@@ -85,30 +85,59 @@ export function Game({ roomCode, playerName, onGameEnd }) {
     };
   }, []);
 
-  const handleKeyPress = (key) => {
+  const handleKeyPress = useCallback((key) => {
     if (gameState !== 'in_progress' || opponentDisconnected) return;
 
     if (key === 'BACKSPACE') {
-      setCurrentGuess(currentGuess.slice(0, -1));
+      setCurrentGuess(prevGuess => prevGuess.slice(0, -1));
       setError('');
     } else if (key === 'ENTER') {
-      if (currentGuess.length === 5) {
-        socket.emit('submit_guess', { guess: currentGuess }, (response) => {
-          if (response.success) {
-            setCurrentGuess('');
-            setError('');
-          } else {
-            setError(response.error);
-          }
-        });
-      } else {
-        setError('Please enter 5 letters');
-      }
+      setCurrentGuess(prevGuess => {
+        if (prevGuess.length === 5) {
+          socket.emit('submit_guess', { guess: prevGuess }, (response) => {
+            if (response.success) {
+              setCurrentGuess('');
+              setError('');
+            } else {
+              setError(response.error);
+            }
+          });
+          return '';
+        } else {
+          setError('Please enter 5 letters');
+          return prevGuess;
+        }
+      });
     } else if (currentGuess.length < 5) {
-      setCurrentGuess(currentGuess + key);
+      setCurrentGuess(prevGuess => prevGuess + key);
       setError('');
     }
-  };
+  }, [gameState, currentGuess, opponentDisconnected]);
+
+  // Add physical keyboard support
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (gameState !== 'in_progress' || opponentDisconnected) return;
+
+      const key = e.key.toUpperCase();
+
+      // Letters A-Z
+      if (/^[A-Z]$/.test(key)) {
+        handleKeyPress(key);
+      }
+      // Backspace
+      else if (e.key === 'Backspace') {
+        handleKeyPress('BACKSPACE');
+      }
+      // Enter
+      else if (e.key === 'Enter') {
+        handleKeyPress('ENTER');
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [handleKeyPress, gameState, opponentDisconnected]);
 
   const handleRematch = () => {
     socket.emit('create_room', { playerName: myName }, (response) => {
