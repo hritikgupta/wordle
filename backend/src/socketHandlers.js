@@ -6,6 +6,12 @@ function generateRoomCode() {
   return Math.random().toString(36).substring(2, 8).toUpperCase();
 }
 
+function sanitizeName(raw) {
+  if (typeof raw !== 'string') return 'Player';
+  // Strip non-printable and non-ASCII characters, collapse whitespace, cap at 20 chars
+  return raw.replace(/[^\x20-\x7E]/g, '').trim().slice(0, 20) || 'Player';
+}
+
 export function setupSocketHandlers(io) {
   io.on('connection', (socket) => {
     console.log(`User connected: ${socket.id}`);
@@ -15,7 +21,7 @@ export function setupSocketHandlers(io) {
       try {
         const roomCode = generateRoomCode();
         const room = gameManager.createRoom(roomCode);
-        room.addPlayer(socket.id, data.playerName || 'Player 1');
+        room.addPlayer(socket.id, sanitizeName(data.playerName) || 'Player 1');
 
         socket.join(roomCode);
         socket.roomCode = roomCode;
@@ -56,7 +62,7 @@ export function setupSocketHandlers(io) {
           return;
         }
 
-        room.addPlayer(socket.id, data.playerName || 'Player 2');
+        room.addPlayer(socket.id, sanitizeName(data.playerName) || 'Player 2');
         socket.join(roomCode);
         socket.roomCode = roomCode;
         socket.playerId = socket.id;
@@ -156,6 +162,42 @@ export function setupSocketHandlers(io) {
           playerCount: Object.keys(room.players).length,
           gameStatus: room.gameStatus,
           players: room.getAllPlayersState(),
+        });
+      } catch (error) {
+        callback({ success: false, error: error.message });
+      }
+    });
+
+    // Reset game for rematch in same room
+    socket.on('start_new_game', (data, callback) => {
+      try {
+        const room = gameManager.getRoom(data.roomCode);
+        if (!room) {
+          callback({ success: false, error: 'Room not found' });
+          return;
+        }
+
+        if (Object.keys(room.players).length < 2) {
+          callback({ success: false, error: 'Not enough players for rematch' });
+          return;
+        }
+
+        // Reset game state
+        room.resetGame();
+
+        console.log(`🔄 Game reset in room ${data.roomCode}`);
+
+        callback({
+          success: true,
+          message: 'Game reset successfully',
+        });
+
+        // Notify all players that game is reset
+        io.to(data.roomCode).emit('game_started', {
+          roomCode: data.roomCode,
+          playerCount: Object.keys(room.players).length,
+          players: room.getAllPlayersState(),
+          message: 'New game started!',
         });
       } catch (error) {
         callback({ success: false, error: error.message });

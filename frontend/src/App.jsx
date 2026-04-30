@@ -7,19 +7,17 @@ function App() {
   const [currentPage, setCurrentPage] = useState('home');
   const [gameInfo, setGameInfo] = useState(null);
 
-  // Restore session from localStorage and URL on app load
+  // Restore session from URL on load
   useEffect(() => {
-    // Check if there's a roomCode in the URL
     const params = new URLSearchParams(window.location.search);
     const roomCodeFromUrl = params.get('room');
-
     if (roomCodeFromUrl) {
-      // Try to restore from localStorage
-      const savedSession = localStorage.getItem(`wordle_session_${roomCodeFromUrl}`);
-      if (savedSession) {
-        const session = JSON.parse(savedSession);
-        setGameInfo(session);
-        setCurrentPage('game');
+      const saved = localStorage.getItem(`wordle_session_${roomCodeFromUrl}`);
+      if (saved) {
+        try {
+          setGameInfo(JSON.parse(saved));
+          setCurrentPage('game');
+        } catch {}
       }
     }
   }, []);
@@ -27,34 +25,16 @@ function App() {
   const handleGameStart = (info) => {
     setGameInfo(info);
     setCurrentPage('game');
-
-    // Save to localStorage
     localStorage.setItem(`wordle_session_${info.roomCode}`, JSON.stringify(info));
-
-    // Add roomCode to URL
     const url = new URL(window.location);
     url.searchParams.set('room', info.roomCode);
     window.history.replaceState({}, '', url);
   };
 
-  const handleGameEnd = (info) => {
-    setGameInfo(info);
-    setCurrentPage('game');
-
-    // Save to localStorage
-    localStorage.setItem(`wordle_session_${info.roomCode}`, JSON.stringify(info));
-
-    // Add roomCode to URL
-    const url = new URL(window.location);
-    url.searchParams.set('room', info.roomCode);
-    window.history.replaceState({}, '', url);
-  };
-
+  // handleGameEnd was identical to handleLeaveGame — merged into one
   const handleLeaveGame = () => {
     setCurrentPage('home');
     setGameInfo(null);
-
-    // Clear URL
     const url = new URL(window.location);
     url.searchParams.delete('room');
     window.history.replaceState({}, '', url);
@@ -68,7 +48,6 @@ function App() {
         <Game
           roomCode={gameInfo.roomCode}
           playerName={gameInfo.playerName}
-          onGameEnd={handleGameEnd}
           onLeaveGame={handleLeaveGame}
         />
       )}
@@ -77,4 +56,3 @@ function App() {
 }
 
 export default App;
-// Updated

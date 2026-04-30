@@ -45,9 +45,32 @@ export class GameRoom {
     });
   }
 
+  resetGame() {
+    if (!this.hasEnoughPlayers()) {
+      throw new Error('Need 2 players for rematch');
+    }
+    this.gameStatus = 'in_progress';
+    this.targetWord = getRandomWord();
+    this.winner = null;
+    Object.values(this.players).forEach(player => {
+      player.guesses = [];
+      player.gameStatus = 'playing';
+      player.startedAt = Date.now();
+    });
+  }
+
   submitGuess(playerId, guess) {
     if (!this.players[playerId]) {
       throw new Error('Player not found');
+    }
+
+    if (this.gameStatus !== 'in_progress') {
+      throw new Error('Game is not in progress');
+    }
+
+    const player = this.players[playerId];
+    if (player.gameStatus === 'won' || player.gameStatus === 'lost') {
+      throw new Error('Player has already finished');
     }
 
     const normalizedGuess = normalizeWord(guess);
@@ -57,10 +80,10 @@ export class GameRoom {
     }
 
     if (!isValidWord(normalizedGuess)) {
-      throw new Error('Invalid word');
+      throw new Error('Not in word list');
     }
 
-    if (this.players[playerId].guesses.length >= 6) {
+    if (player.guesses.length >= 6) {
       throw new Error('No more guesses left');
     }
 
